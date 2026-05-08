@@ -143,6 +143,10 @@ export default function HomeScreen() {
     { name: 'Dessert', icon: 'cake', color: '#8E44AD' },
   ];
 
+  const userOrders = orders.filter(o => o.userId === user?.id && o.status === 'delivered');
+  const pastOrdersPoints = userOrders.reduce((sum, o) => sum + Math.floor(o.finalAmount / 10), 0);
+  const displayPoints = (user?.loyaltyPoints || 0) + pastOrdersPoints;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
@@ -161,7 +165,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/loyalty-dashboard')}
           >
             <MaterialIcons name="stars" size={16} color={Colors.primary} />
-            <Text style={styles.pointsText}>{user?.loyaltyPoints} pts</Text>
+            <Text style={styles.pointsText}>{displayPoints} pts</Text>
           </Pressable>
         </View>
 

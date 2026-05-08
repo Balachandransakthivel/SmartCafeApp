@@ -88,12 +88,21 @@ export const useAuth = () => {
     setUser(updatedUser);
   };
 
+  const updateUser = async (updates: Partial<User>) => {
+    if (!user) return;
+    const updatedUser = { ...user, ...updates };
+    await saveUser(updatedUser);
+    setUser(updatedUser);
+    return { success: true };
+  };
+
   return {
     user,
     loading,
     login,
     logout,
     updateUserPoints,
+    updateUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
   };

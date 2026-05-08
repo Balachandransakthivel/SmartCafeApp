@@ -4,12 +4,14 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
+import { useOrders } from '@/hooks/useOrders';
 import { Colors, Spacing, BorderRadius, Typography, GlowShadows } from '@/constants/theme';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, logout, isAdmin } = useAuth();
+  const { orders } = useOrders();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -48,7 +50,7 @@ export default function ProfileScreen() {
         { label: 'Loyalty Rewards', icon: 'stars', route: '/loyalty-dashboard', color: Colors.warning },
         { label: 'Leaderboard', icon: 'emoji-events', route: '/leaderboard', color: Colors.info },
         { label: 'Notifications', icon: 'notifications', route: '/notifications', color: Colors.success },
-        { label: 'Edit Profile', icon: 'person', route: null, color: Colors.textSecondary },
+        { label: 'Edit Profile', icon: 'person', route: '/edit-profile', color: Colors.textSecondary },
         { label: 'Help & Support', icon: 'help', route: null, color: Colors.textDim },
       ];
 
@@ -96,7 +98,9 @@ export default function ProfileScreen() {
               onPress={() => router.push('/loyalty-dashboard')}
             >
               <MaterialIcons name="stars" size={18} color={Colors.warning} />
-              <Text style={styles.pointsVal}>{user?.loyaltyPoints ?? 0}</Text>
+              <Text style={styles.pointsVal}>
+                {(user?.loyaltyPoints || 0) + (orders.filter(o => o.userId === user?.id && o.status === 'delivered').reduce((sum, o) => sum + Math.floor(o.finalAmount / 10), 0))}
+              </Text>
               <Text style={styles.pointsLabel}>Loyalty Points</Text>
               <MaterialIcons name="chevron-right" size={18} color={Colors.textDim} style={{ marginLeft: 'auto' }} />
             </Pressable>

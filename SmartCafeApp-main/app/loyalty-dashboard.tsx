@@ -11,6 +11,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
+import { useOrders } from '@/hooks/useOrders';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { LOYALTY_REWARDS } from '@/services/mockData';
 import { useAlert } from '@/template';
@@ -21,6 +22,7 @@ export default function LoyaltyDashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, updateUserPoints } = useAuth();
+  const { orders } = useOrders();
   const {
     transactions,
     redeemedRewards,
@@ -34,9 +36,13 @@ export default function LoyaltyDashboardScreen() {
 
   if (!user) return null;
 
+  const userOrders = orders.filter(o => o.userId === user.id && o.status === 'delivered');
+  const pastOrdersPoints = userOrders.reduce((sum, o) => sum + Math.floor(o.finalAmount / 10), 0);
+  const displayPoints = user.loyaltyPoints + pastOrdersPoints;
+
   const userTransactions = getUserTransactions(user.id);
   const userRedeemed = getUserRedeemedRewards(user.id);
-  const tierProgress = getTierProgress(user.loyaltyPoints);
+  const tierProgress = getTierProgress(displayPoints);
   const monthlyStats = getMonthlyStats(user.id);
 
   const getTierColor = (tier: string) => {
@@ -56,7 +62,7 @@ export default function LoyaltyDashboardScreen() {
     const reward = LOYALTY_REWARDS.find((r) => r.id === rewardId);
     if (!reward) return;
 
-    if (user.loyaltyPoints < reward.pointsCost) {
+    if (displayPoints < reward.pointsCost) {
       showAlert('Insufficient Points', `You need ${reward.pointsCost} points to redeem this reward`);
       return;
     }
@@ -104,7 +110,7 @@ export default function LoyaltyDashboardScreen() {
             <MaterialIcons name="stars" size={48} color={Colors.primary} />
             <View style={{ flex: 1 }}>
               <Text style={styles.pointsLabel}>Available Points</Text>
-              <Text style={styles.pointsValue}>{user.loyaltyPoints}</Text>
+              <Text style={styles.pointsValue}>{displayPoints}</Text>
             </View>
           </View>
         </View>
@@ -182,7 +188,7 @@ export default function LoyaltyDashboardScreen() {
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
             renderItem={({ item: reward }) => {
-              const canRedeem = user.loyaltyPoints >= reward.pointsCost;
+              const canRedeem = displayPoints >= reward.pointsCost;
               return (
                 <View style={styles.rewardCard}>
                   <View style={styles.rewardIcon}>

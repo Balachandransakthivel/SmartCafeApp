@@ -85,13 +85,21 @@ const getAnalytics = asyncHandler(async (req, res) => {
         _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
         revenue: { $sum: '$totalAmount' }
       }
-    },
-    { $sort: { _id: -1 } }
+    }
   ]);
 
-  const revenueByDay = revenueByDayAggregate.map(r => ({
-    date: r._id,
-    revenue: r.revenue
+  const last7Dates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    return date.toISOString().split('T')[0];
+  }).reverse();
+
+  const revenueByDayMap = new Map();
+  revenueByDayAggregate.forEach(r => revenueByDayMap.set(r._id, r.revenue));
+
+  const revenueByDay = last7Dates.map(date => ({
+    date,
+    revenue: revenueByDayMap.get(date) || 0
   }));
 
   // 5. Category Distribution

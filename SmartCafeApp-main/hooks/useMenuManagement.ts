@@ -22,6 +22,8 @@ export const useMenuManagement = () => {
       const backendItems = response.data.map((item: any) => ({
         ...item,
         id: item._id, // Map MongoDB _id to frontend id
+        image: item.imageUrl || item.image,
+        available: item.availability !== undefined ? item.availability : item.available,
       }));
       setMenuItems(backendItems);
       // Cache success locally 

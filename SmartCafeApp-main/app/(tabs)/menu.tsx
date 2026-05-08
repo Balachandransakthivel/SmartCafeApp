@@ -26,6 +26,12 @@ export default function MenuScreen() {
   const [showVoiceTextModal, setShowVoiceTextModal] = useState(false);
   const [voiceTextInput, setVoiceTextInput] = useState('');
 
+  React.useEffect(() => {
+    if (params.category) {
+      setSelectedCategory(params.category as string);
+    }
+  }, [params.category]);
+
   const categories = ['All', 'Coffee', 'Burger', 'Pizza', 'Drinks', 'Snacks', 'Dessert'];
 
   const filteredItems = MENU_ITEMS.filter(item => {
